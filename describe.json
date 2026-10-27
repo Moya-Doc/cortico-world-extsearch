@@ -1,0 +1,73 @@
+{
+  "tools": [
+    {
+      "name": "extsearch_find",
+      "description": "Search the Cortico extension market (the official index behind the Extensions page) for extensions. Fuzzy-matches keywords against names, tags and descriptions and returns ranked candidates with short descriptions. Without query, lists everything that passes the filters by downloads.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "A few keywords for what the user wants, space-separated; Chinese and English both work (e.g. \"语音 tts voice\"). Not a whole sentence."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "world",
+              "provider",
+              "bot"
+            ],
+            "description": "world: connects the pet to an app, platform or capability; provider: a model service; bot: a whole persona."
+          },
+          "tag": {
+            "type": "string",
+            "description": "Only extensions with this market tag, by id or label (e.g. \"voice\", \"game\", \"语音\")."
+          }
+        }
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "按关键词在扩展市场里模糊搜索扩展，返回候选和简介。",
+        "en": "Fuzzy-searches the extension market by keywords and returns candidates with descriptions."
+      }
+    },
+    {
+      "name": "extsearch_detail",
+      "description": "Full market entry of one extension by its exact npm package name: both language descriptions, author, license, platforms, tags, version, tool/event counts, rating and links.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Exact npm package name from extsearch_find."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "查看某个扩展在市场里的完整信息。",
+        "en": "Shows the full market entry of one extension."
+      }
+    }
+  ],
+  "events": [],
+  "prompts": [
+    {
+      "key": "worlds.extsearch.envPrompt",
+      "title": "扩展市场搜索 · 环境提示词",
+      "role": "envPrompt",
+      "content": "用户询问有没有能做某件事的扩展（插件），或描述了一个模糊的需求时，调用 extsearch_find 在 Cortico 扩展市场里搜索。\n"
+    }
+  ]
+}

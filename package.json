@@ -1,0 +1,69 @@
+{
+  "name": "cortico-world-extsearch",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Cortico World: lets the bot search the Cortico extension market (official index) and recommend extensions from their descriptions",
+  "license": "MIT",
+  "keywords": [
+    "cortico-world",
+    "cortico",
+    "coopanion",
+    "extension-search"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.28.6",
+  "main": "./src/index.ts",
+  "cortico": {
+    "kind": "world",
+    "api": 6,
+    "displayName": "扩展市场搜索",
+    "tags": [
+      "internet"
+    ],
+    "locales": {
+      "zh": {
+        "displayName": "扩展市场搜索",
+        "description": "让桌宠帮你在 Cortico 扩展市场里找扩展：读官方索引里的简介，按你的模糊描述推荐合适的扩展。只读，不会替你安装。"
+      },
+      "en": {
+        "displayName": "Extension Market Search",
+        "description": "Lets the pet search the Cortico extension market: it reads descriptions from the official index and recommends extensions matching a vague request. Read-only; never installs anything."
+      }
+    },
+    "describe": "describe.json"
+  },
+  "files": [
+    "src",
+    "LICENSE",
+    "NOTICE.md",
+    "README.md",
+    "CHANGELOG.md",
+    "describe.json",
+    "README_zh.md"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "cortico": "^0.2.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Moya-Doc/cortico-world-extsearch.git"
+  },
+  "homepage": "https://github.com/Moya-Doc/cortico-world-extsearch#readme",
+  "bugs": {
+    "url": "https://github.com/Moya-Doc/cortico-world-extsearch/issues"
+  },
+  "author": {
+    "name": "Moya-Doc",
+    "url": "https://github.com/Moya-Doc"
+  }
+}
