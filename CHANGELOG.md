@@ -1,3 +1,8 @@
+## 0.2.1
+
+- 收藏卡片的标签区增加彩色平台标签，识别 Windows、macOS、Linux 和排除声明；未声明平台限制时单独标注。
+- Favorites cards show colored platform tags for Windows, macOS and Linux, honor exclusions and label packages without declared platform restrictions.
+
 ## 0.2.0
 
 - 多个扩展候选适合时，指引 bot 先介绍差异，再通过 `pet_ask` 提供选项；收到用户选择后查询详情并讨论。没有 `pet_ask` 时使用文字选项。

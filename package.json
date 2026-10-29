@@ -1,6 +1,6 @@
 {
   "name": "cortico-world-extsearch",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Search the Cortico extension market, choose candidates in conversation and save local favorites",
   "license": "MIT",

@@ -22,6 +22,9 @@ export interface ExtSearchStrings {
   updatedAt: string;
   author: string;
   platforms: string;
+  platformsUnspecified: string;
+  platformExcluded: string;
+  platformsDeclared: string;
   official: string;
   certified: string;
   missing: string;
@@ -40,6 +43,7 @@ export interface ExtSearchStrings {
 
 const TEXT: Record<Language, ExtSearchStrings> = {
   zh: {
+    platformsUnspecified: "未声明平台限制", platformExcluded: "不支持 {platform}", platformsDeclared: "平台声明：{platforms}",
     favoriteChanged: "刷新期间该收藏已发生变化，请重新刷新。",
     badName: "请提供有效的扩展包名。", notSaved: "该扩展尚未收藏。", indexUnavailable: "无法刷新扩展索引。", unknownMethod: "未知的收藏操作。", storageCleared: "收藏已清除。",
     label: '扩展市场搜索', promptTitle: '扩展市场搜索 · 环境提示词', promptDescription: '搜索扩展、选择候选和管理收藏的指引。',
@@ -50,6 +54,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: '官方', certified: '已认证', missing: '索引中未找到', blocked: '已被市场屏蔽', snapshot: '已保存的信息快照', error: '操作失败', links: '项目链接', deprecated: '已弃用',
   },
   'zh-Hant': {
+    platformsUnspecified: "未宣告平台限制", platformExcluded: "不支援 {platform}", platformsDeclared: "平台宣告：{platforms}",
     favoriteChanged: "更新期間此收藏已變更，請重新更新。",
     badName: "請提供有效的擴充套件名稱。", notSaved: "此擴充套件尚未收藏。", indexUnavailable: "無法更新擴充套件索引。", unknownMethod: "未知的收藏操作。", storageCleared: "收藏已清除。",
     label: '擴充套件市場搜尋', promptTitle: '擴充套件市場搜尋 · 環境提示詞', promptDescription: '搜尋擴充套件、選擇候選和管理收藏的指引。',
@@ -60,6 +65,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: '官方', certified: '已認證', missing: '索引中未找到', blocked: '已被市場封鎖', snapshot: '已儲存的資訊快照', error: '操作失敗', links: '專案連結', deprecated: '已棄用',
   },
   en: {
+    platformsUnspecified: "No platform restriction declared", platformExcluded: "Not supported: {platform}", platformsDeclared: "Declared platforms: {platforms}",
     favoriteChanged: "This favorite changed while refreshing. Refresh it again.",
     badName: "Provide a valid extension package name.", notSaved: "This extension is not saved.", indexUnavailable: "The extension index could not be refreshed.", unknownMethod: "Unknown favorites operation.", storageCleared: "Favorites cleared.",
     label: 'Extension Market Search', promptTitle: 'Extension Market Search · Environment prompt', promptDescription: 'Guidance for searching extensions, choosing candidates and managing favorites.',
@@ -70,6 +76,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: 'Official', certified: 'Certified', missing: 'Not found in index', blocked: 'Blocked by market', snapshot: 'Saved information snapshot', error: 'Operation failed', links: 'Project links', deprecated: 'Deprecated',
   },
   ja: {
+    platformsUnspecified: "プラットフォーム制限の指定なし", platformExcluded: "{platform} 非対応", platformsDeclared: "指定プラットフォーム：{platforms}",
     favoriteChanged: "更新中にこのお気に入りが変更されました。もう一度更新してください。",
     badName: "有効な拡張機能のパッケージ名を入力してください。", notSaved: "この拡張機能は保存されていません。", indexUnavailable: "拡張機能の索引を更新できませんでした。", unknownMethod: "不明なお気に入り操作です。", storageCleared: "お気に入りを消去しました。",
     label: '拡張機能マーケット検索', promptTitle: '拡張機能マーケット検索 · 環境プロンプト', promptDescription: '拡張機能の検索、候補選択、お気に入り管理の指針。',
@@ -80,6 +87,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: '公式', certified: '認定済み', missing: '索引に見つかりません', blocked: 'マーケットでブロック済み', snapshot: '保存済みの情報', error: '操作に失敗しました', links: 'プロジェクトのリンク', deprecated: '非推奨',
   },
   ko: {
+    platformsUnspecified: "플랫폼 제한 선언 없음", platformExcluded: "지원하지 않음: {platform}", platformsDeclared: "선언된 플랫폼: {platforms}",
     favoriteChanged: "새로고침 중에 이 즐겨찾기가 변경되었습니다. 다시 새로고침하세요.",
     badName: "올바른 확장 패키지 이름을 입력하세요.", notSaved: "저장되지 않은 확장입니다.", indexUnavailable: "확장 색인을 새로고침할 수 없습니다.", unknownMethod: "알 수 없는 즐겨찾기 작업입니다.", storageCleared: "즐겨찾기를 지웠습니다.",
     label: '확장 마켓 검색', promptTitle: '확장 마켓 검색 · 환경 프롬프트', promptDescription: '확장 검색, 후보 선택 및 즐겨찾기 관리 지침입니다.',
@@ -90,6 +98,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: '공식', certified: '인증됨', missing: '색인에서 찾을 수 없음', blocked: '마켓에서 차단됨', snapshot: '저장된 정보 스냅샷', error: '작업 실패', links: '프로젝트 링크', deprecated: '사용 중단',
   },
   fr: {
+    platformsUnspecified: "Aucune restriction de plateforme déclarée", platformExcluded: "Non pris en charge : {platform}", platformsDeclared: "Plateformes déclarées : {platforms}",
     favoriteChanged: "Ce favori a changé pendant l’actualisation. Actualisez-le à nouveau.",
     badName: "Indiquez un nom de paquet d’extension valide.", notSaved: "Cette extension n’est pas enregistrée.", indexUnavailable: "L’index des extensions n’a pas pu être actualisé.", unknownMethod: "Opération de favoris inconnue.", storageCleared: "Favoris effacés.",
     label: 'Recherche d’extensions', promptTitle: 'Recherche d’extensions · Consigne d’environnement', promptDescription: 'Consignes pour rechercher des extensions, choisir des candidats et gérer les favoris.',
@@ -100,6 +109,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: 'Officiel', certified: 'Certifié', missing: 'Absent de l’index', blocked: 'Bloqué par le marché', snapshot: 'Copie des informations enregistrées', error: 'Échec de l’opération', links: 'Liens du projet', deprecated: 'Obsolète',
   },
   de: {
+    platformsUnspecified: "Keine Plattformbeschränkung angegeben", platformExcluded: "Nicht unterstützt: {platform}", platformsDeclared: "Angegebene Plattformen: {platforms}",
     favoriteChanged: "Dieser Favorit wurde während der Aktualisierung geändert. Aktualisiere ihn erneut.",
     badName: "Gib einen gültigen Erweiterungspaketnamen an.", notSaved: "Diese Erweiterung ist nicht gespeichert.", indexUnavailable: "Der Erweiterungsindex konnte nicht aktualisiert werden.", unknownMethod: "Unbekannter Favoritenvorgang.", storageCleared: "Favoriten gelöscht.",
     label: 'Erweiterungssuche', promptTitle: 'Erweiterungssuche · Umgebungsanweisung', promptDescription: 'Anweisungen zur Suche nach Erweiterungen, zur Auswahl und zur Verwaltung von Favoriten.',
@@ -110,6 +120,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: 'Offiziell', certified: 'Zertifiziert', missing: 'Nicht im Index gefunden', blocked: 'Vom Markt gesperrt', snapshot: 'Gespeicherte Informationen', error: 'Vorgang fehlgeschlagen', links: 'Projektlinks', deprecated: 'Veraltet',
   },
   'es-419': {
+    platformsUnspecified: "Sin restricciones de plataforma declaradas", platformExcluded: "No compatible con {platform}", platformsDeclared: "Plataformas declaradas: {platforms}",
     favoriteChanged: "Este favorito cambió durante la actualización. Vuelve a actualizarlo.",
     badName: "Indica un nombre de paquete de extensión válido.", notSaved: "Esta extensión no está guardada.", indexUnavailable: "No se pudo actualizar el índice de extensiones.", unknownMethod: "Operación de favoritos desconocida.", storageCleared: "Se borraron los favoritos.",
     label: 'Búsqueda de extensiones', promptTitle: 'Búsqueda de extensiones · Instrucción de entorno', promptDescription: 'Instrucciones para buscar extensiones, elegir opciones y administrar favoritos.',
@@ -120,6 +131,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: 'Oficial', certified: 'Certificado', missing: 'No se encontró en el índice', blocked: 'Bloqueado por el mercado', snapshot: 'Copia guardada de la información', error: 'La operación falló', links: 'Enlaces del proyecto', deprecated: 'Obsoleto',
   },
   'pt-BR': {
+    platformsUnspecified: "Nenhuma restrição de plataforma declarada", platformExcluded: "Sem suporte a {platform}", platformsDeclared: "Plataformas declaradas: {platforms}",
     favoriteChanged: "Este favorito mudou durante a atualização. Atualize novamente.",
     badName: "Informe um nome válido de pacote de extensão.", notSaved: "Esta extensão não está salva.", indexUnavailable: "Não foi possível atualizar o índice de extensões.", unknownMethod: "Operação de favoritos desconhecida.", storageCleared: "Favoritos apagados.",
     label: 'Busca de extensões', promptTitle: 'Busca de extensões · Instrução de ambiente', promptDescription: 'Instruções para buscar extensões, escolher opções e gerenciar favoritos.',
@@ -130,6 +142,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: 'Oficial', certified: 'Certificado', missing: 'Não encontrado no índice', blocked: 'Bloqueado pelo mercado', snapshot: 'Cópia salva das informações', error: 'Falha na operação', links: 'Links do projeto', deprecated: 'Obsoleto',
   },
   it: {
+    platformsUnspecified: "Nessuna restrizione di piattaforma dichiarata", platformExcluded: "Non supportato: {platform}", platformsDeclared: "Piattaforme dichiarate: {platforms}",
     favoriteChanged: "Questo preferito è cambiato durante l’aggiornamento. Aggiornalo di nuovo.",
     badName: "Inserisci un nome di pacchetto di estensione valido.", notSaved: "Questa estensione non è salvata.", indexUnavailable: "Impossibile aggiornare l’indice delle estensioni.", unknownMethod: "Operazione sui preferiti sconosciuta.", storageCleared: "Preferiti cancellati.",
     label: 'Ricerca estensioni', promptTitle: 'Ricerca estensioni · Istruzioni di ambiente', promptDescription: 'Istruzioni per cercare estensioni, scegliere candidati e gestire i preferiti.',
@@ -140,6 +153,7 @@ const TEXT: Record<Language, ExtSearchStrings> = {
     official: 'Ufficiale', certified: 'Certificato', missing: 'Non trovato nell’indice', blocked: 'Bloccato dal mercato', snapshot: 'Copia delle informazioni salvate', error: 'Operazione non riuscita', links: 'Link del progetto', deprecated: 'Deprecato',
   },
   ru: {
+    platformsUnspecified: "Ограничения платформ не указаны", platformExcluded: "Не поддерживается: {platform}", platformsDeclared: "Заявленные платформы: {platforms}",
     favoriteChanged: "Это избранное изменилось во время обновления. Обновите его снова.",
     badName: "Укажите допустимое имя пакета расширения.", notSaved: "Это расширение не сохранено.", indexUnavailable: "Не удалось обновить индекс расширений.", unknownMethod: "Неизвестное действие с избранным.", storageCleared: "Избранное очищено.",
     label: 'Поиск расширений', promptTitle: 'Поиск расширений · Инструкция среды', promptDescription: 'Инструкции по поиску расширений, выбору кандидатов и управлению избранным.',

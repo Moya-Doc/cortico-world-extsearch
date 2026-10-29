@@ -1,4 +1,4 @@
-<!-- Owner: src/world.ts, src/favorites.ts, src/config.ts, src/market.ts, src/search.ts, src/model-text.ts, src/ENV_PROMPT.zh.md, webui/client.ts, webui/style.css, package.json, LICENSE, NOTICE.md -->
+<!-- Owner: src/world.ts, src/favorites.ts, src/config.ts, src/market.ts, src/search.ts, src/model-text.ts, src/ENV_PROMPT.zh.md, webui/client.ts, webui/platforms.ts, webui/style.css, package.json, LICENSE, NOTICE.md -->
 
 # cortico-world-extsearch · 扩展市场搜索
 
@@ -33,7 +33,7 @@ pnpm build
 
 可以要求 Coo 收藏指定扩展、查看收藏列表或取消收藏。包名有歧义时，应先确认要操作的扩展。收藏不会安装扩展；安装仍在 Coopanion 的扩展页单独进行。
 
-World 的“收藏”选项卡显示已保存的包名、简介、版本、标签、平台信息、时间和项目链接，支持筛选、取消收藏和刷新包信息。Coo 修改收藏后，页面会更新。
+World 的“收藏”选项卡显示已保存的包名、简介、版本、标签、平台信息、时间和项目链接，支持筛选、取消收藏和刷新包信息。Coo 修改收藏后，页面会更新。平台声明显示为彩色标签：Windows 为蓝色、macOS 为紫色、Linux 为琥珀色；排除的平台标为“不支持”。没有平台限制声明时显示“未声明平台限制”。标签依据包的声明，不代表兼容性测试结果。
 
 收藏保存在 `<dataDir>/extsearch/favorites.json`，`dataDir` 是 Cortico 提供的部署数据目录。每条记录包含准确包名、包信息快照、索引来源和收藏及更新时间。重复收藏同一个包会更新快照，保留首次收藏时间，不会产生重复记录。重启后收藏仍然保留。
 

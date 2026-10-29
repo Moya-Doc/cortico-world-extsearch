@@ -1,6 +1,7 @@
 import type { WebUiClientBundle, WebUiPanelContext } from 'cortico/web/shared/client-panel.ts';
 import type { FavoriteEntry } from '../src/favorites.ts';
 import { extSearchStrings } from '../src/strings.ts';
+import { platformBadges } from './platforms.ts';
 import './style.css';
 
 export interface FavoritesPanelState {
@@ -62,7 +63,8 @@ export function mountFavorites(ctx: WebUiPanelContext) {
   const active = () => !disposed && !ctx.signal.aborted;
   const dateText = (value: string) => new Date(value).toLocaleString(ctx.language === 'zh' ? 'zh-CN' : ctx.language);
   const searchText = (item: FavoriteEntry) => [item.name, item.entry.displayName, item.entry.zh?.displayName, item.entry.en?.displayName,
-    item.entry.description, item.entry.zh?.description, item.entry.en?.description, ...item.entry.tags].filter(Boolean).join('\n').normalize('NFKC').toLocaleLowerCase();
+    item.entry.description, item.entry.zh?.description, item.entry.en?.description, ...item.entry.tags,
+    ...platformBadges(item.entry.os, t).map(platform => platform.label)].filter(Boolean).join('\n').normalize('NFKC').toLocaleLowerCase();
 
   function updateButtons() {
     for (const node of panel.querySelectorAll<HTMLButtonElement>('button')) node.disabled = mutating;
@@ -103,6 +105,11 @@ export function mountFavorites(ctx: WebUiPanelContext) {
     const badge = (label: string) => badges.append(h('span', 'extsearch-badge', label));
     badge(entry.kind);
     if (entry.version) badge(`v${entry.version}`);
+    for (const platform of platformBadges(entry.os, t)) {
+      const tag = h('span', `extsearch-badge extsearch-platform extsearch-platform-${platform.tone}`, platform.label);
+      tag.title = entry.os?.length ? t.platformsDeclared.replace('{platforms}', entry.os.join(', ')) : t.platformsUnspecified;
+      badges.append(tag);
+    }
     if (entry.official) badge(t.official);
     if (entry.certified) badge(t.certified);
     if (entry.deprecated) badge(t.deprecated);
@@ -110,7 +117,6 @@ export function mountFavorites(ctx: WebUiPanelContext) {
     const description = h('p', 'extsearch-description', locale?.description || entry.description);
     node.append(heading, badges, description);
     if (entry.author) node.append(h('p', 'extsearch-meta', `${t.author}: ${entry.author}`));
-    if (entry.os?.length) node.append(h('p', 'extsearch-meta', `${t.platforms}: ${entry.os.join(', ')}`));
     if (item.status !== 'saved') {
       const warning = h('p', 'extsearch-warning', item.status === 'missing' ? t.missing : t.blocked);
       if (item.reason) warning.append(doc.createTextNode(`: ${item.reason}`));

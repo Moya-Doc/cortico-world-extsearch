@@ -1,4 +1,4 @@
-<!-- Owner: src/world.ts, src/favorites.ts, src/config.ts, src/market.ts, src/search.ts, src/model-text.ts, src/ENV_PROMPT.en.md, webui/client.ts, webui/style.css, package.json, LICENSE, NOTICE.md -->
+<!-- Owner: src/world.ts, src/favorites.ts, src/config.ts, src/market.ts, src/search.ts, src/model-text.ts, src/ENV_PROMPT.en.md, webui/client.ts, webui/platforms.ts, webui/style.css, package.json, LICENSE, NOTICE.md -->
 
 # cortico-world-extsearch
 
@@ -33,7 +33,7 @@ After the user answers, Coo is instructed to fetch the selected package's detail
 
 Ask Coo to save a named extension, list saved extensions, or remove one from favorites. An ambiguous name should be clarified before saving or removing it. Favorites do not install packages; installation remains a separate operation in Coopanion's Extensions page.
 
-The World's **Favorites** tab displays the saved package name, description, version, tags, platform information, dates and available project links. It supports filtering, removal and refreshing package information. The page updates when favorites change through Coo.
+The World's **Favorites** tab displays the saved package name, description, version, tags, platform information, dates and available project links. It supports filtering, removal and refreshing package information. The page updates when favorites change through Coo. Platform declarations appear as colored tags: Windows in blue, macOS in purple and Linux in amber. Excluded platforms are marked as unsupported. Packages without platform restrictions are labeled accordingly; these labels reflect the package declaration, not a compatibility test.
 
 Favorites are stored in `<dataDir>/extsearch/favorites.json`, where `dataDir` is the deployment data directory supplied by Cortico. Each record retains the exact package name, a package information snapshot, the index source, and saved/updated timestamps. Saving the same package again updates its snapshot without creating a duplicate or changing its original saved time. Restarting the app preserves favorites.
 

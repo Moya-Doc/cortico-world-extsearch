@@ -189,4 +189,29 @@ describe('favorites panel', () => {
       for (const value of Object.values(labels)) expect(value.trim()).not.toBe('');
     }
   });
+
+  it('shows declared platforms as colored tags and respects exclusions', async () => {
+    const windows = favorite('cortico-world-window'); windows.entry.os = ['win32'];
+    const multi = favorite('cortico-world-multi'); multi.entry.os = ['darwin', 'linux'];
+    const excluded = favorite('cortico-world-excluded'); excluded.entry.os = ['!win32'];
+    const conflict = favorite('cortico-world-conflict'); conflict.entry.os = ['win32', '!win32'];
+    const unknown = favorite('cortico-world-other'); unknown.entry.os = ['freebsd'];
+    const unrestricted = favorite('cortico-world-any'); unrestricted.entry.os = ['any'];
+    const h = harness([windows, multi, excluded, conflict, unknown, unrestricted, favorite('cortico-world-unspecified')]);
+    await settle();
+    const tags = (name: string) => h.action(name, 'remove').closest('.extsearch-card')!.querySelectorAll<HTMLElement>('.extsearch-platform');
+    expect([...tags(windows.name)].map(tag => tag.textContent)).toEqual(['Windows']);
+    expect(tags(windows.name)[0].classList.contains('extsearch-platform-windows')).toBe(true);
+    expect([...tags(multi.name)].map(tag => tag.textContent)).toEqual(['macOS', 'Linux']);
+    expect([...tags(excluded.name)].map(tag => tag.textContent)).toEqual(['macOS', 'Linux', extSearchStrings('en').platformExcluded.replace('{platform}', 'Windows')]);
+    expect([...tags(conflict.name)].map(tag => tag.textContent)).toEqual([extSearchStrings('en').platformExcluded.replace('{platform}', 'Windows')]);
+    expect([...tags(unknown.name)].map(tag => tag.textContent)).toEqual(['freebsd']);
+    for (const name of [unrestricted.name, 'cortico-world-unspecified']) {
+      expect([...tags(name)].map(tag => tag.textContent)).toEqual([extSearchStrings('en').platformsUnspecified]);
+    }
+    const input = h.root.querySelector('input')!;
+    input.value = 'macOS';
+    input.dispatchEvent(new h.dom.window.Event('input'));
+    expect(h.root.querySelectorAll('.extsearch-card:not([hidden])')).toHaveLength(2);
+  });
 });
