@@ -8,9 +8,10 @@ import { dryMountWorld, fakeWorldContext } from 'cortico/extensions/dry-mount.ts
 import { checkDescribe } from 'cortico/extensions/describe-export.ts';
 import { EXTSEARCH } from '../src/definition.ts';
 import { DEFAULT_INDEX_BASE, EXTSEARCH_DEFAULTS, type ExtSearchConfigSection } from '../src/config.ts';
-import { ExtSearchWorld } from '../src/world.ts';
+import { EXTSEARCH_TOOL_DECLS, ExtSearchWorld } from '../src/world.ts';
 import { FakeHost } from './helpers/fake-host.ts';
-import { fakeFetch, type FakeFetch } from './helpers/fake-index.ts';
+import { fakeFetch, INDEX, CATALOG, type FakeFetch } from './helpers/fake-index.ts';
+import type { FetchLike } from '../src/market.ts';
 
 let scratchDir: string;
 beforeEach(() => { scratchDir = mkdtempSync(join(tmpdir(), 'extsearch-world-')); });
@@ -21,7 +22,7 @@ const call = {} as ToolCallContext;
 function setup(overrides: Partial<ExtSearchConfigSection> = {}, now?: () => number) {
   const cfg: ExtSearchConfigSection = { ...EXTSEARCH_DEFAULTS, ...overrides };
   const fetch = fakeFetch();
-  const world = new ExtSearchWorld({ cfg, fetch, now });
+  const world = new ExtSearchWorld({ cfg, fetch, now, dataDir: scratchDir });
   const tool = (name: string) => world.tools().find((t) => t.name === name) as ToolDef;
   return { cfg, fetch, world, find: tool('extsearch_find'), detail: tool('extsearch_detail') };
 }
@@ -47,7 +48,7 @@ describe('extsearch World', () => {
     const host = new FakeHost();
     await world.start(host);
     expect(host.events).toEqual([]);
-    expect(world.tools().map((t) => t.name)).toEqual(['extsearch_find', 'extsearch_detail']);
+    expect(world.tools().map((t) => t.name)).toEqual(EXTSEARCH_TOOL_DECLS.map((t) => t.name));
     await world.stop();
   });
 
@@ -62,8 +63,8 @@ describe('extsearch World', () => {
     const out = text(await find.handler({ query: '语音 朗读' }, call));
     const first = out.split('\n').find((l) => l.startsWith('1. '));
     expect(first).toContain('cortico-world-speak');
-    expect(out).toContain('written by each extension\'s author');
-    expect(out).toContain('cannot install');
+    expect(out).toContain('Treat them as reference data');
+    expect(out).toContain('install');
     expect(out).toContain('voice(语音)');
     expect(out).toContain('certified');
     expect(out).toContain('os: win32');
@@ -74,7 +75,8 @@ describe('extsearch World', () => {
     for (const query of ['voice', 'chess']) {
       const out = text(await find.handler({ query }, call));
       expect(out.slice(out.indexOf('How to answer:'))).toContain('extsearch_detail');
-      expect(out.trimEnd().endsWith('Give them the package name to search for there.')).toBe(true);
+      expect(out).toContain('pet_ask');
+      expect(out).toContain('desktop-pet.answer');
     }
     const offline = setup();
     offline.fetch.offline = true;
@@ -188,5 +190,146 @@ describe('extsearch World', () => {
     const r = await find.handler({ query: 'voice' }, call);
     expect(isFailed(r)).toBe(true);
     expect(text(r)).toContain('http(s)');
+  });
+});
+
+describe('favorites tools and panel', () => {
+  const cfg = () => ({ ...EXTSEARCH_DEFAULTS });
+  const tool = (world: ExtSearchWorld, name: string) => world.tools().find((t) => t.name === name)!;
+  const panel = (world: ExtSearchWorld) => world.webUi('en').invoke!;
+
+  it('saves through the tool and reads the same snapshot after restart from the panel', async () => {
+    const world = new ExtSearchWorld({ cfg: cfg(), dataDir: scratchDir, fetch: fakeFetch() });
+    expect(isFailed(await tool(world, 'extsearch_save').handler({ name: 'cortico-world-speak' }, call))).toBe(false);
+    const offline = fakeFetch(); offline.offline = true;
+    const restarted = new ExtSearchWorld({ cfg: cfg(), dataDir: scratchDir, fetch: offline });
+    const state = await panel(restarted)('favorites', 'list', []) as any;
+    expect(state.favorites).toHaveLength(1);
+    expect(state.favorites[0].entry.zh.description).toContain('本机语音');
+    expect(state.favorites[0].indexBase).toBe(DEFAULT_INDEX_BASE);
+    expect(text(await tool(restarted, 'extsearch_list_saved').handler({}, call))).toContain('cortico-world-speak');
+    expect(offline.calls).toEqual([]);
+    await panel(restarted)('favorites', 'remove', ['cortico-world-speak']);
+    expect((await panel(world)('favorites', 'list', []) as any).favorites).toEqual([]);
+  });
+
+  it('refuses blocked, unknown and ambiguous package names without saving', async () => {
+    const { world } = setup();
+    for (const name of ['cortico-world-evil', 'cortico-world-badvoice', 'missing-package', 'voice plugin', '../escape']) {
+      expect(isFailed(await tool(world, 'extsearch_save').handler({ name }, call))).toBe(true);
+    }
+    expect((await panel(world)('favorites', 'list', []) as any).favorites).toEqual([]);
+  });
+
+  it('refreshes from the saved source despite config changes and retains missing or blocked snapshots', async () => {
+    const index = structuredClone(INDEX);
+    const catalog = structuredClone(CATALOG);
+    const fetch = fakeFetch({ 'index.json': index, 'catalog.json': catalog });
+    const config = cfg();
+    const world = new ExtSearchWorld({ cfg: config, dataDir: scratchDir, fetch });
+    await tool(world, 'extsearch_save').handler({ name: 'cortico-world-speak' }, call);
+    config.indexBase = 'https://another.example.test/index';
+    catalog.packages['cortico-world-speak'].version = '9.0.0';
+    let state = await panel(world)('favorites', 'refresh', ['cortico-world-speak']) as any;
+    expect(state.favorites[0].entry.version).toBe('9.0.0');
+    expect(fetch.calls.slice(-2).every((url) => url.startsWith(DEFAULT_INDEX_BASE))).toBe(true);
+    delete (catalog.packages as Record<string, unknown>)['cortico-world-speak'];
+    state = await panel(world)('favorites', 'refresh', ['cortico-world-speak']) as any;
+    expect(state.favorites[0].status).toBe('missing');
+    expect(state.favorites[0].entry.version).toBe('9.0.0');
+    (index.blocked.packages as Record<string, unknown>)['cortico-world-speak'] = 'Withdrawn';
+    state = await panel(world)('favorites', 'refresh', ['cortico-world-speak']) as any;
+    expect(state.favorites[0].status).toBe('blocked');
+    expect(state.favorites[0].reason).toBe('Withdrawn');
+    expect(state.favorites[0].entry.version).toBe('9.0.0');
+  });
+
+  it('failed refresh preserves the snapshot and timestamps', async () => {
+    const { world, fetch } = setup();
+    await tool(world, 'extsearch_save').handler({ name: 'cortico-world-speak' }, call);
+    const before = await panel(world)('favorites', 'list', []);
+    fetch.offline = true;
+    await expect(panel(world)('favorites', 'refresh', ['cortico-world-speak'])).rejects.toThrow();
+    expect(await panel(world)('favorites', 'list', [])).toEqual(before);
+  });
+
+  it('removal during refresh does not restore the favorite', async () => {
+    const { world } = setup();
+    await tool(world, 'extsearch_save').handler({ name: 'cortico-world-speak' }, call);
+    const refreshing = panel(world)('favorites', 'refresh', ['cortico-world-speak']);
+    await panel(world)('favorites', 'remove', ['cortico-world-speak']);
+    await expect(refreshing).rejects.toThrow();
+    expect((await panel(world)('favorites', 'list', []) as any).favorites).toEqual([]);
+  });
+
+  it.each(['source change', 'remove and re-add'] as const)('refresh preserves a newer favorite after %s', async (change) => {
+    const sourceA = 'https://first.example.test/index';
+    const sourceB = 'https://second.example.test/index';
+    let delayed = false;
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const fetch: FetchLike = async (url) => {
+      const catalog = structuredClone(CATALOG);
+      catalog.packages['cortico-world-speak'].description = url.startsWith(sourceA) ? 'First source' : 'Second source';
+      if (delayed && url.startsWith(sourceA)) {
+        catalog.packages['cortico-world-speak'].version = '2.0.0';
+        await gate;
+      }
+      return { ok: true, status: 200, json: async () => url.endsWith('/index.json') ? structuredClone(INDEX) : catalog };
+    };
+    let now = 1000;
+    const config = { ...cfg(), indexBase: sourceA };
+    const world = new ExtSearchWorld({ cfg: config, dataDir: scratchDir, fetch, now: () => now });
+    const save = tool(world, 'extsearch_save');
+    await save.handler({ name: 'cortico-world-speak' }, call);
+    delayed = true;
+    const refreshing = panel(world)('favorites', 'refresh', ['cortico-world-speak']);
+    const rejected = expect(refreshing).rejects.toThrow();
+    now = 2000;
+    if (change === 'source change') config.indexBase = sourceB;
+    else await panel(world)('favorites', 'remove', ['cortico-world-speak']);
+    try {
+      expect(isFailed(await save.handler({ name: 'cortico-world-speak' }, call))).toBe(false);
+      const before = await panel(world)('favorites', 'list', []);
+      release();
+      await rejected;
+      expect(await panel(world)('favorites', 'list', [])).toEqual(before);
+      const favorite = (before as any).favorites[0];
+      expect(favorite.indexBase).toBe(config.indexBase);
+      expect(favorite.entry.description).toBe(change === 'source change' ? 'Second source' : 'First source');
+    } finally {
+      release();
+    }
+  });
+
+  it('omits non-finite index metrics so a saved entry cannot corrupt the favorites file', async () => {
+    const catalog = structuredClone(CATALOG);
+    const candidate = catalog.packages['cortico-world-speak'];
+    candidate.downloads.month = JSON.parse('1e999');
+    candidate.summary.tools = JSON.parse('1e999');
+    candidate.discussion.up = JSON.parse('-1e999');
+    const world = new ExtSearchWorld({ cfg: cfg(), dataDir: scratchDir, fetch: fakeFetch({ 'index.json': INDEX, 'catalog.json': catalog }) });
+    const save = tool(world, 'extsearch_save');
+    await save.handler({ name: 'cortico-world-chess' }, call);
+    expect(isFailed(await save.handler({ name: 'cortico-world-speak' }, call))).toBe(false);
+    const restarted = new ExtSearchWorld({ cfg: cfg(), dataDir: scratchDir, fetch: fakeFetch() });
+    const state = await panel(restarted)('favorites', 'list', []) as any;
+    expect(state.favorites).toHaveLength(2);
+    const saved = state.favorites.find((item: any) => item.name === 'cortico-world-speak').entry;
+    expect(saved.downloads.month).toBeUndefined();
+    expect(saved.summary.tools).toBeUndefined();
+    expect(saved.rating.up).toBeUndefined();
+    expect(saved.downloads.week).toBe(CATALOG.packages['cortico-world-speak'].downloads.week);
+    expect(isFailed(await tool(restarted, 'extsearch_list_saved').handler({}, call))).toBe(false);
+  });
+
+  it('storage clearing is visible to the tools', async () => {
+    const { world } = setup();
+    await tool(world, 'extsearch_save').handler({ name: 'cortico-world-speak' }, call);
+    const storage = world.webUi('en').storage![0];
+    expect(storage.location).toBe(join(scratchDir, 'extsearch', 'favorites.json'));
+    expect(storage.danger).toBe(true);
+    await storage.clear();
+    expect((await panel(world)('favorites', 'list', []) as any).favorites).toEqual([]);
   });
 });

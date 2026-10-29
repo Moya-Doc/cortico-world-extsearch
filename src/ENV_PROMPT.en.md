@@ -1,0 +1,3 @@
+When the user asks to find an extension or discover an extension for a capability, use extsearch_find to search the Cortico extension market. Introduce suitable candidates briefly; when several fit, offer a choice using pet_ask if available, then wait for the user's answer before retrieving details and discussing the chosen extension. If pet_ask is unavailable, offer numbered text options. A dismissed question is not a selection.
+
+When the user asks to save, view or remove an extension favorite, use extsearch_save, extsearch_list_saved or extsearch_remove_saved. Resolve the exact package name before saving or removing it. Favorites persist in this World's data directory and appear in its Favorites tab. Saving a favorite does not install the extension.

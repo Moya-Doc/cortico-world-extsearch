@@ -1,5 +1,6 @@
 import type { ConfigGroup } from 'cortico/core/types.ts';
-import { pick, type Language } from 'cortico/core/language.ts';
+import type { Language } from 'cortico/core/language.ts';
+import { extSearchStrings } from './strings.ts';
 
 /** 官方索引仓 main 分支的 raw 地址;与扩展页「索引源」的默认值相同。 */
 export const DEFAULT_INDEX_BASE = 'https://raw.githubusercontent.com/Pal-AI-Lab/cortico-extensions/main';
@@ -22,35 +23,16 @@ export const EXTSEARCH_DEFAULTS: ExtSearchConfigSection = {
   maxResults: 8,
 };
 
-const TEXT = {
-  zh: {
-    title: '扩展市场搜索',
-    description: '只读官方扩展索引，不安装任何东西。',
-    indexBaseTitle: '索引源',
-    indexBaseDescription: '扩展索引的地址，目录结构要与官方索引仓相同。访问 GitHub 慢时可换成镜像；留默认即用官方地址。',
-    maxResultsTitle: '最多返回',
-    maxResultsDescription: '每次搜索最多列出几个扩展。',
-  },
-  en: {
-    title: 'Extension Market Search',
-    description: 'Reads the official extension index only; never installs anything.',
-    indexBaseTitle: 'Index source',
-    indexBaseDescription: 'Address of the extension index, laid out like the official index repository. Use a mirror if GitHub is slow; the default is the official address.',
-    maxResultsTitle: 'Max results',
-    maxResultsDescription: 'How many extensions one search lists at most.',
-  },
-};
-
 /** World 配置的 JSON Schema 声明;文案按界面语言给。 */
 export function extSearchConfigGroup(language: Language): ConfigGroup {
-  const t = pick(language, TEXT);
+  const t = extSearchStrings(language);
   return {
     id: 'world:extsearch',
     owner: 'world:extsearch',
     schema: {
       type: 'object',
-      title: t.title,
-      description: t.description,
+      title: t.label,
+      description: t.configDescription,
       properties: {
         'worlds.extsearch.indexBase': {
           type: 'string',
