@@ -105,9 +105,9 @@ export class MarketIndex {
   }
 
   /** 取索引快照;过期才重新请求,请求失败时退回同一索引源的上一份。 */
-  async load(base: string): Promise<MarketSnapshot> {
+  async load(base: string, refresh = false): Promise<MarketSnapshot> {
     const cached = this.cache?.snapshot.base === base ? this.cache : null;
-    if (cached && this.now() - cached.at < this.ttlMs) return cached.snapshot;
+    if (!refresh && cached && this.now() - cached.at < this.ttlMs) return cached.snapshot;
     try {
       const [index, catalog] = await Promise.all([
         this.getJson(`${base}/index.json`),
@@ -261,7 +261,7 @@ function localeText(v: unknown): LocaleText | undefined {
 
 function numbers<K extends string>(obj: Record<string, unknown>, keys: readonly K[]): Partial<Record<K, number>> {
   const out: Partial<Record<K, number>> = {};
-  for (const k of keys) if (typeof obj[k] === 'number') out[k] = obj[k] as number;
+  for (const k of keys) if (typeof obj[k] === 'number' && Number.isFinite(obj[k])) out[k] = obj[k] as number;
   return out;
 }
 

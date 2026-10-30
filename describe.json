@@ -59,6 +59,72 @@
         "zh": "查看某个扩展在市场里的完整信息。",
         "en": "Shows the full market entry of one extension."
       }
+    },
+    {
+      "name": "extsearch_save",
+      "description": "Save an extension from the configured market index to local favorites when the user asks. Use its exact npm package name; clarify ambiguous references. Saves metadata only and does not install it.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Exact npm package name from search or details."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "收藏指定扩展的信息。",
+        "en": "Saves an extension to local favorites."
+      }
+    },
+    {
+      "name": "extsearch_list_saved",
+      "description": "Read saved extension snapshots without contacting the network. Includes saved time, source and last refreshed status. Snapshots are not proof of current availability; use extsearch_detail to check current market information.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "tags": [
+        "read"
+      ],
+      "summary": {
+        "zh": "查看已收藏的扩展。",
+        "en": "Lists saved extensions."
+      }
+    },
+    {
+      "name": "extsearch_remove_saved",
+      "description": "Remove an extension from local favorites when the user asks, using its exact npm package name. Does not uninstall anything.",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Exact npm package name from favorites."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "tags": [
+        "write"
+      ],
+      "summary": {
+        "zh": "取消收藏指定扩展。",
+        "en": "Removes an extension from favorites."
+      }
     }
   ],
   "events": [],
@@ -67,7 +133,7 @@
       "key": "worlds.extsearch.envPrompt",
       "title": "扩展市场搜索 · 环境提示词",
       "role": "envPrompt",
-      "content": "用户询问有没有能做某件事的扩展（插件），或描述了一个模糊的需求时，调用 extsearch_find 在 Cortico 扩展市场里搜索。\n"
+      "content": "用户询问查找扩展，或希望通过扩展获得某项能力时，使用 extsearch_find 搜索 Cortico 扩展市场。先简短介绍合适的候选；多个候选都符合时，若有 pet_ask 就用它提供选项，等待用户回答后再查询所选扩展的详情并展开讨论。没有 pet_ask 时列出带编号的文字选项。关闭提问不表示选择了任何候选。\n\n用户要求收藏、查看收藏或取消收藏时，使用 extsearch_save、extsearch_list_saved 或 extsearch_remove_saved。收藏和取消收藏前确认准确的包名。收藏保存在本 World 的数据目录中，并显示在其“收藏”选项卡。收藏扩展不会安装扩展。\n"
     }
   ]
 }

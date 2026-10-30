@@ -1,8 +1,8 @@
 {
   "name": "cortico-world-extsearch",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "type": "module",
-  "description": "Cortico World: lets the bot search the Cortico extension market (official index) and recommend extensions from their descriptions",
+  "description": "Search the Cortico extension market, choose candidates in conversation and save local favorites",
   "license": "MIT",
   "keywords": [
     "cortico-world",
@@ -20,19 +20,23 @@
     "api": 6,
     "displayName": "扩展市场搜索",
     "tags": [
-      "internet"
+      "internet",
+      "injection-risk"
     ],
     "locales": {
       "zh": {
         "displayName": "扩展市场搜索",
-        "description": "让桌宠帮你在 Cortico 扩展市场里找扩展：读官方索引里的简介，按你的模糊描述推荐合适的扩展。只读，不会替你安装。"
+        "description": "搜索 Cortico 扩展市场，介绍候选后选择深入了解的扩展，并将插件收藏到本地卡片页。"
       },
       "en": {
         "displayName": "Extension Market Search",
-        "description": "Lets the pet search the Cortico extension market: it reads descriptions from the official index and recommends extensions matching a vague request. Read-only; never installs anything."
+        "description": "Search the Cortico extension market, choose a candidate to discuss and save extensions in a local favorites page."
       }
     },
-    "describe": "describe.json"
+    "describe": "describe.json",
+    "webUiClient": "dist/webui.js",
+    "webUiStyle": "dist/webui.css",
+    "icon": "assets/icon.png"
   },
   "files": [
     "src",
@@ -41,18 +45,25 @@
     "README.md",
     "CHANGELOG.md",
     "describe.json",
-    "README_zh.md"
+    "dist",
+    "README_zh.md",
+    "assets"
   ],
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.web.json",
+    "build": "esbuild webui/client.ts --bundle --format=esm --outfile=dist/webui.js",
+    "prepack": "pnpm build"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "cortico": "^0.2.7",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.1.0",
+    "@types/jsdom": "^21.1.7"
   },
   "repository": {
     "type": "git",
