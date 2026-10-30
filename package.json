@@ -35,7 +35,8 @@
     },
     "describe": "describe.json",
     "webUiClient": "dist/webui.js",
-    "webUiStyle": "dist/webui.css"
+    "webUiStyle": "dist/webui.css",
+    "icon": "assets/icon.png"
   },
   "files": [
     "src",
@@ -45,7 +46,8 @@
     "CHANGELOG.md",
     "describe.json",
     "dist",
-    "README_zh.md"
+    "README_zh.md",
+    "assets"
   ],
   "scripts": {
     "test": "vitest run",
